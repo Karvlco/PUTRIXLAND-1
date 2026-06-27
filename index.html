@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PUTRIXLAND: La Épica del Chochoverso</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0a0015;font-family:'Press Start 2P',monospace;color:#fff;overflow:hidden;height:100vh;width:100vw;}
+#gc{width:100vw;height:100vh;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+
+/* TITLE */
+#titleScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;background:radial-gradient(ellipse at center,#1a003a 0%,#0a0015 70%);position:absolute;z-index:10;}
+.stars{position:absolute;width:100%;height:100%;overflow:hidden;}
+.star{position:absolute;background:white;border-radius:50%;animation:twinkle 2s infinite alternate;}
+@keyframes twinkle{from{opacity:.2}to{opacity:1}}
+.title-main{font-size:clamp(16px,3.5vw,34px);color:#ff69ff;text-shadow:3px 3px #8800aa,0 0 20px #ff00ff,0 0 40px #aa00ff;letter-spacing:4px;animation:glow 2s ease-in-out infinite alternate;line-height:1.6;text-align:center;}
+.title-sub{font-size:clamp(5px,1.3vw,11px);color:#cc88ff;margin-top:10px;letter-spacing:2px;text-align:center;}
+@keyframes glow{from{text-shadow:3px 3px #8800aa,0 0 10px #ff00ff}to{text-shadow:3px 3px #8800aa,0 0 30px #ff00ff,0 0 60px #aa00ff,0 0 80px #ff69ff}}
+.blink{animation:blink 1s step-end infinite;font-size:clamp(5px,1.2vw,10px);color:#ffff00;margin-top:26px;cursor:pointer;}
+@keyframes blink{50%{opacity:0}}
+.title-chars{display:flex;gap:16px;margin-top:20px;justify-content:center;flex-wrap:wrap;}
+@keyframes efloat{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-10px) rotate(3deg)}}
+
+/* CHAR SELECT */
+#charSelectScreen{display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;background:radial-gradient(ellipse at center,#1a003a 0%,#0a0015 70%);position:absolute;z-index:10;gap:12px;overflow-y:auto;padding:10px 0;}
+.cs-title{font-size:clamp(7px,1.8vw,14px);color:#ff88ff;text-shadow:0 0 15px #ff00ff;}
+.cs-cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:860px;padding:0 10px;}
+.cs-card{background:#0d001f;border:2px solid #6622aa;padding:12px 10px;text-align:center;cursor:pointer;width:140px;transition:all .2s;flex-shrink:0;}
+.cs-card:hover{border-color:#ff44ff;box-shadow:0 0 20px #aa00ff;transform:scale(1.06);}
+.cs-icon{font-size:30px;margin-bottom:6px;}
+.cs-name{font-size:clamp(5px,1.1vw,8px);color:#ff88ff;margin-bottom:5px;}
+.cs-stat{font-size:clamp(4px,.85vw,6px);color:#aaaacc;line-height:1.9;}
+.cs-abil{font-size:clamp(4px,.85vw,6px);color:#ffdd88;margin-top:4px;line-height:1.6;}
+.cs-desc{font-size:clamp(3px,.75vw,5px);color:#886699;margin-top:5px;line-height:1.6;}
+
+/* GAME SCREEN */
+#gameScreen{display:none;width:100%;height:100%;position:absolute;flex-direction:column;}
+canvas{display:block;image-rendering:pixelated;}
+
+/* HUD */
+#hud{position:absolute;top:0;left:0;right:0;padding:6px 10px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;z-index:5;background:linear-gradient(to bottom,rgba(0,0,0,.85) 0%,transparent 100%);}
+.hud-left{display:flex;flex-direction:column;gap:3px;}
+.hud-right{display:flex;flex-direction:column;gap:3px;align-items:flex-end;}
+.hud-name{font-size:clamp(5px,1.1vw,8px);color:#ff88ff;}
+.hud-label{font-size:clamp(4px,.85vw,6px);color:#aaa;}
+.hp-bar-wrap{display:flex;align-items:center;gap:5px;}
+.hp-bar-bg{width:80px;height:8px;background:#330000;border:1px solid #660000;}
+.hp-bar{height:100%;background:linear-gradient(to right,#ff2244,#ff6688);transition:width .3s;}
+.hp-text{font-size:clamp(4px,.85vw,6px);color:#ff6688;}
+.score-text{font-size:clamp(5px,1vw,8px);color:#ffdd44;}
+.zone-text{font-size:clamp(5px,1vw,8px);color:#88ffdd;}
+
+/* DIALOG */
+#dialogBox{position:absolute;bottom:55px;left:50%;transform:translateX(-50%);width:92%;max-width:680px;background:#0d001f;border:3px solid #aa44ff;box-shadow:0 0 15px #aa44ff,inset 0 0 10px rgba(170,68,255,.1);padding:12px 16px;z-index:20;display:none;}
+.dialog-portrait{float:left;margin-right:12px;font-size:28px;line-height:1;}
+.dialog-speaker{font-size:clamp(5px,1.05vw,8px);color:#ff88ff;margin-bottom:7px;}
+.dialog-text{font-size:clamp(4px,.95vw,7px);color:#eeddff;line-height:1.9;min-height:36px;}
+.dialog-continue{font-size:clamp(4px,.8vw,6px);color:#aa44ff;text-align:right;margin-top:6px;animation:blink .8s step-end infinite;}
+
+/* BATTLE */
+#battleScreen{position:absolute;width:100%;height:100%;background:#050010;z-index:15;display:none;flex-direction:column;align-items:center;justify-content:space-between;padding:16px;}
+.battle-top{width:100%;display:flex;justify-content:space-between;align-items:center;}
+.battle-side{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.b-sprite{font-size:clamp(28px,7vw,62px);animation:efloat 2s ease-in-out infinite alternate;filter:drop-shadow(0 0 12px #ff00ff);}
+.b-psprite{font-size:clamp(22px,5.5vw,50px);animation:pbob 1s ease-in-out infinite alternate;}
+@keyframes pbob{from{transform:translateY(0)}to{transform:translateY(-5px)}}
+.b-name{font-size:clamp(5px,1.2vw,9px);color:#ff44aa;text-shadow:0 0 8px #ff0088;}
+.b-pname{font-size:clamp(5px,1.2vw,9px);color:#88ffdd;}
+.b-hpwrap{display:flex;gap:5px;align-items:center;}
+.b-hpbg{width:110px;height:9px;background:#330000;border:2px solid #880000;}
+.b-hpbar{height:100%;background:linear-gradient(to right,#ff0044,#ff4488);transition:width .4s;}
+.b-hpbg2{width:110px;height:9px;background:#003300;border:2px solid #006600;}
+.b-hpbar2{height:100%;background:linear-gradient(to right,#00cc44,#44ff88);transition:width .4s;}
+.b-hptxt{font-size:clamp(4px,.85vw,6px);color:#ff6688;}
+.b-hptxt2{font-size:clamp(4px,.85vw,6px);color:#44ff88;}
+.battle-mid{display:flex;flex-direction:column;align-items:center;width:100%;}
+.battle-log{background:rgba(0,0,0,.75);border:2px solid #6622aa;width:100%;max-width:580px;padding:9px 12px;font-size:clamp(5px,1vw,8px);color:#ddaaff;line-height:1.9;min-height:52px;margin-bottom:9px;white-space:pre-line;}
+.battle-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%;max-width:480px;}
+.battle-btn{background:#1a0033;border:2px solid #8833cc;color:#fff;font-family:'Press Start 2P',monospace;font-size:clamp(5px,1vw,8px);padding:9px 5px;cursor:pointer;transition:all .15s;text-shadow:1px 1px #000;}
+.battle-btn:hover:not(:disabled){background:#440088;border-color:#ff44ff;box-shadow:0 0 12px #aa00ff;transform:scale(1.04);}
+.battle-btn:disabled{opacity:.4;cursor:not-allowed;}
+.battle-btn.special{border-color:#ffaa00;color:#ffee88;}
+.battle-btn.special:hover:not(:disabled){background:#443300;border-color:#ffdd00;box-shadow:0 0 14px #ffaa00;}
+
+/* END */
+#endScreen{position:absolute;width:100%;height:100%;background:rgba(0,0,0,.92);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:30;text-align:center;padding:20px;}
+.end-title{font-size:clamp(13px,2.8vw,26px);margin-bottom:18px;}
+.end-score{font-size:clamp(7px,1.6vw,12px);color:#ffdd44;margin-bottom:26px;white-space:pre-line;line-height:2;}
+.end-btn{background:#220044;border:3px solid #aa44ff;color:#fff;font-family:'Press Start 2P',monospace;font-size:clamp(6px,1.4vw,11px);padding:12px 20px;cursor:pointer;transition:all .2s;}
+.end-btn:hover{background:#440088;box-shadow:0 0 20px #aa00ff;}
+
+/* CONTROLS */
+#controls{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:clamp(4px,.75vw,6px);color:#443366;z-index:5;white-space:nowrap;}
+
+/* FLASH */
+#flashOverlay{position:absolute;width:100%;height:100%;pointer-events:none;z-index:25;opacity:0;transition:opacity .1s;}
+
+/* TOUCH DPAD */
+#touchControls{display:none;position:absolute;bottom:16px;left:16px;z-index:50;pointer-events:auto;user-select:none;-webkit-user-select:none;}
+#touchActionBtn{display:none;position:absolute;bottom:26px;right:18px;z-index:50;pointer-events:auto;user-select:none;-webkit-user-select:none;}
+.dpad{width:128px;height:128px;position:relative;}
+.dpad-btn{position:absolute;width:40px;height:40px;background:rgba(170,68,255,.22);border:2px solid rgba(200,100,255,.55);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:none;transition:background .08s,transform .08s;backdrop-filter:blur(2px);box-shadow:0 0 8px rgba(170,68,255,.3);}
+.dpad-btn:active,.dpad-btn.pressed{background:rgba(170,68,255,.55);transform:scale(.91);box-shadow:0 0 16px rgba(255,100,255,.6);}
+.dpad-center{position:absolute;top:44px;left:44px;width:40px;height:40px;background:rgba(80,20,120,.4);border:2px solid rgba(150,60,220,.4);border-radius:50%;}
+.dpad-up{top:0;left:44px}.dpad-down{top:88px;left:44px}.dpad-left{top:44px;left:0}.dpad-right{top:44px;left:88px}
+.action-btn{width:60px;height:60px;background:rgba(255,60,180,.25);border:3px solid rgba(255,100,220,.6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-family:'Press Start 2P',monospace;color:#ffaaff;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:none;text-align:center;line-height:1.4;box-shadow:0 0 14px rgba(255,60,180,.35);backdrop-filter:blur(2px);transition:background .08s,transform .08s;}
+.action-btn:active,.action-btn.pressed{background:rgba(255,60,180,.55);transform:scale(.91);box-shadow:0 0 22px rgba(255,100,255,.7);}
+@media (pointer:coarse){#touchControls{display:block;}#touchActionBtn{display:block;}#controls{display:none;}}
+
+/* ZONE TRANSITION */
+#zoneTransition{position:absolute;width:100%;height:100%;background:#000;z-index:28;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+.zt-title{font-size:clamp(9px,2vw,18px);color:#ff88ff;text-shadow:0 0 20px #ff00ff;text-align:center;}
+.zt-sub{font-size:clamp(6px,1.3vw,10px);color:#cc88ff;text-align:center;}
+</style>
+</head>
+<body>
+<div id="gc">
+  <div id="flashOverlay"></div>
+
+  <!-- TITLE -->
+  <div id="titleScreen">
+    <div class="stars" id="stars"></div>
+    <div style="position:relative;z-index:2;text-align:center;">
+      <div class="title-main">✨ PUTRIXLAND ✨<br>La Épica del<br>Chochoverso</div>
+      <div class="title-sub">⚔️ RPG DE AVENTURA RETRO • 10 ZONAS • 8 HÉROES ⚔️</div>
+      <div class="title-chars">
+        <span style="font-size:24px;animation:efloat 1.5s ease-in-out infinite alternate">🌟</span>
+        <span style="font-size:24px;animation:efloat 1.8s ease-in-out infinite alternate">⭐</span>
+        <span style="font-size:24px;animation:efloat 2.1s ease-in-out infinite alternate">🦎</span>
+        <span style="font-size:24px;animation:efloat 1.3s ease-in-out infinite alternate">🔥</span>
+        <span style="font-size:24px;animation:efloat 2.4s ease-in-out infinite alternate">💜</span>
+        <span style="font-size:24px;animation:efloat 1.7s ease-in-out infinite alternate">👁️</span>
+        <span style="font-size:24px;animation:efloat 2.0s ease-in-out infinite alternate">🎅</span>
+        <span style="font-size:24px;animation:efloat 1.6s ease-in-out infinite alternate">🃏</span>
+      </div>
+      <div class="blink" onclick="startGame()">[ PRESIONA AQUÍ PARA COMENZAR ]</div>
+      <div style="font-size:clamp(3px,.7vw,5px);color:#443355;margin-top:14px;">PUTRIXLAND UNIVERSE • v6.9.69 • LORE EDITION</div>
+    </div>
+  </div>
+
+  <!-- CHAR SELECT -->
+  <div id="charSelectScreen">
+    <div class="cs-title">⚔️ ELIGE TU HÉROE ⚔️</div>
+    <div style="font-size:clamp(4px,.85vw,6px);color:#886699;margin-bottom:8px;">WASD/FLECHAS = MOVER | E/ESPACIO = ACCIÓN | CLIC = INTERACTUAR</div>
+    <div class="cs-cards" id="csCards"></div>
+  </div>
+
+  <!-- GAME -->
+  <div id="gameScreen">
+    <canvas id="canvas"></canvas>
+    <div id="hud">
+      <div class="hud-left">
+        <div class="hud-name" id="hudName">HÉROE</div>
+        <div class="hp-bar-wrap">
+          <div class="hp-bar-bg"><div class="hp-bar" id="hpBar" style="width:100%"></div></div>
+          <div class="hp-text" id="hpText">100/100</div>
+        </div>
+        <div class="hud-label" id="hudAbility">HABILIDAD: —</div>
+      </div>
+      <div class="hud-right">
+        <div class="score-text">⭐ <span id="scoreText">0</span></div>
+        <div class="zone-text">ZONA <span id="zoneText">1</span>/10</div>
+      </div>
+    </div>
+    <div id="dialogBox">
+      <div class="dialog-portrait" id="dialogPortrait">👤</div>
+      <div>
+        <div class="dialog-speaker" id="dialogSpeaker">???</div>
+        <div class="dialog-text" id="dialogText"></div>
+        <div class="dialog-continue">▼ E / ESPACIO / CLIC</div>
+      </div>
+    </div>
+    <div id="controls">[ WASD / ↑↓←→ ] MOVER &nbsp;|&nbsp; [ E / ESPACIO ] INTERACTUAR / DIÁLOGO</div>
+    <div id="touchControls">
+      <div class="dpad">
+        <div class="dpad-btn dpad-up" id="dUp">▲</div>
+        <div class="dpad-btn dpad-left" id="dLeft">◀</div>
+        <div class="dpad-center"></div>
+        <div class="dpad-btn dpad-right" id="dRight">▶</div>
+        <div class="dpad-btn dpad-down" id="dDown">▼</div>
+      </div>
+    </div>
+    <div id="touchActionBtn">
+      <div class="action-btn" id="btnAction">✨<br>ACCIÓN</div>
+    </div>
+  </div>
+
+  <!-- BATTLE -->
+  <div id="battleScreen">
+    <div class="battle-top">
+      <div class="battle-side">
+        <div class="b-sprite" id="bEnemySprite">👿</div>
+        <div class="b-name" id="bEnemyName">ENEMIGO</div>
+        <div class="b-hpwrap">
+          <span style="font-size:clamp(4px,.85vw,6px);color:#888">HP</span>
+          <div class="b-hpbg"><div class="b-hpbar" id="eHpBar" style="width:100%"></div></div>
+          <span class="b-hptxt" id="eHpTxt">100</span>
+        </div>
+      </div>
+      <div style="font-size:clamp(12px,3vw,26px);color:#ff00ff;text-shadow:0 0 12px #ff00ff;">⚔️</div>
+      <div class="battle-side">
+        <div class="b-psprite" id="bPlayerSprite">🌟</div>
+        <div class="b-pname" id="bPlayerName">HÉROE</div>
+        <div class="b-hpwrap">
+          <span style="font-size:clamp(4px,.85vw,6px);color:#888">HP</span>
+          <div class="b-hpbg2"><div class="b-hpbar2" id="pHpBar" style="width:100%"></div></div>
+          <span class="b-hptxt2" id="pHpTxt">100</span>
+        </div>
+      </div>
+    </div>
+    <div class="battle-mid">
+      <div class="battle-log" id="battleLog">¡Comienza el combate!</div>
+      <div class="battle-actions" id="battleActions"></div>
+    </div>
+    <div style="font-size:clamp(4px,.8vw,6px);color:#443366;margin-top:6px;">CLIC EN LOS BOTONES PARA ACTUAR</div>
+  </div>
+
+  <!-- ZONE TRANSITION -->
+  <div id="zoneTransition">
+    <div class="zt-title" id="ztTitle">🌟 ZONA COMPLETADA 🌟</div>
+    <div class="zt-sub" id="ztSub">Cargando siguiente territorio...</div>
+  </div>
+
+  <!-- END -->
+  <div id="endScreen">
+    <div class="end-title" id="endTitle">GAME OVER</div>
+    <div class="end-score" id="endScore">Score: 0</div>
+    <button class="end-btn" onclick="returnToTitle()">▶ VOLVER AL INICIO</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  PERSONAJES
+// ══════════════════════════════════════════════
+const CHARACTERS = [
+  {
+    id:'mamasita', name:'MAMASITA', icon:'🌟', sprite:'🌟',
+    hp:150, atk:30, def:18,
+    ability:'Lágrima de Chocho',
+    abilityDesc:'Poder del universo — quita 90 HP fijo',
+    abilityDmg:90, abilityType:'fixed',
+    desc:'Protectora de Putrixland.\nNacida de la lágrima de Chocho.',
+    color:'#ffdd88'
+  },
+  {
+    id:'xuxi', name:'XUXI', icon:'🦎', sprite:'🦎',
+    hp:130, atk:38, def:12,
+    ability:'Putazo Supremo',
+    abilityDesc:'Manda al calabozo — quita 110 HP fijo',
+    abilityDmg:110, abilityType:'fixed',
+    desc:'Hija de Termotanque.\nPutazos cósmicos de élite.',
+    color:'#88ffaa'
+  },
+  {
+    id:'reveluvdiosa', name:'REVELUVDIOSA', icon:'🔥', sprite:'🔥',
+    hp:120, atk:42, def:10,
+    ability:'Kwami Revolución',
+    abilityDesc:'Diosa desatada — quita 130 HP + cura 25',
+    abilityDmg:130, abilityType:'heal',
+    desc:'Diosa de la Revolución.\nEl espíritu de Natalia, imparable.',
+    color:'#ff8844'
+  },
+  {
+    id:'kiyix', name:'KIYIX', icon:'💜', sprite:'💜',
+    hp:140, atk:35, def:20,
+    ability:'Kiyixverso Caos',
+    abilityDesc:'Sin lógica ni gravedad — daño aleatorio 50-200',
+    abilityDmg:0, abilityType:'random',
+    desc:'Diosa del caos absoluto.\nReina del Kiyixverso.',
+    color:'#cc88ff'
+  },
+  {
+    id:'chocho', name:'CHOCHO', icon:'⭐', sprite:'⭐',
+    hp:200, atk:45, def:25,
+    ability:'Chochito ☆',
+    abilityDesc:'Poder primordial del creador — quita 150 HP fijo',
+    abilityDmg:150, abilityType:'fixed',
+    desc:'El dios creador del universo.\nPadre de Mamasita y del Chochoverso.',
+    color:'#ffffaa'
+  },
+  {
+    id:'xoxo', name:'XOXO', icon:'👁️', sprite:'👁️',
+    hp:160, atk:50, def:15,
+    ability:'A MAMAR 👁️',
+    abilityDesc:'Lo opuesto a todo — quita 155 HP fijo',
+    abilityDmg:155, abilityType:'fixed',
+    desc:'Dios opuesto al Chochoverso.\nDestructor sellado en la cárcel cósmica.',
+    color:'#ff4488'
+  },
+  {
+    id:'maricona', name:'SRTA. MARICONA', icon:'🃏', sprite:'🃏',
+    hp:130, atk:40, def:14,
+    ability:'CÁLLATE MARICÓN 🤫',
+    abilityDesc:'Silencia la existencia — quita 200 HP fijo',
+    abilityDmg:200, abilityType:'fixed',
+    desc:'La Srta. Maricona.\nAmiga eterna de Puertita.',
+    color:'#ff88dd'
+  },
+  {
+    id:'carlitos', name:'CARLITOS', icon:'🎅', sprite:'🎅',
+    hp:180, atk:55, def:30,
+    ability:'XUXI ESTOY MAMANDO PIZZA 🍕',
+    abilityDesc:'K.O. INSTANTÁNEO — derrota al enemigo de 1 golpe',
+    abilityDmg:99999, abilityType:'oneshot',
+    desc:'El eterno navideño.\nDespierta del letargo para derrocar reinos.',
+    color:'#ff4444'
+  },
+];
+
+// ══════════════════════════════════════════════
+//  ZONAS (10)
+// ══════════════════════════════════════════════
+const ZONES = [
+  // 0 - Chochoverso Primordial
+  {
+    name:'CHOCHOVERSO\nPRIMORDIAL', icon:'🌌',
+    bg:['#050010','#0a0028','#050018'],
+    story:[
+      {sp:'NARRADOR',pt:'📜',tx:'En el principio, las masas universales chocaron y de esa colisión nacieron tres dioses: CHOCHO, XOXO y KIYIX.'},
+      {sp:'NARRADOR',pt:'📜',tx:'Solo despertó CHOCHO, quien creó el CHOCHOVERSO y la tierra putrixiana... pero las sombras del xoxoverso empiezan a despertar.'},
+      {sp:'CHOCHO',pt:'⭐',tx:'¡Esta tierra se llamará PUTRIXLAND! ¡Y será gloriosa para siempre! Pero necesito tu ayuda, elegida...'},
+    ],
+    enemies:[
+      {name:'GLUGLUXIANO',sprite:'🦠',hp:50,atk:12,def:3,reward:80,desc:'Criatura primordial de los mares de Putrixland.'},
+      {name:'QUEEN CHONIZ',sprite:'👑',hp:65,atk:16,def:5,reward:100,desc:'Reina de las criaturas marinas ancestrales.'},
+      {name:'PUTISAURIO',sprite:'🦕',hp:75,atk:18,def:6,reward:120,desc:'Dinosaurio sagrado, evolución de Celujuicha.'},
+      {name:'REINA MARINA',sprite:'🐚',hp:90,atk:20,def:8,reward:150,desc:'Soberana de los océanos primordiales.'},
+    ],
+    npcs:[
+      {x:.22,y:.48,sp:'⭐',name:'CHOCHO',dlg:[{sp:'CHOCHO',pt:'⭐',tx:'¡Defiende el Chochoverso! Las criaturas primordiales se han vuelto locas.'}]},
+      {x:.68,y:.56,sp:'💜',name:'KIYIX',dlg:[{sp:'KIYIX',pt:'💜',tx:'En mi Kiyixverso no hay lógica ni gravedad. ¡Todo puede pasar!'}]},
+    ],
+    bossName:'XOXO PRIMORDIAL',bossSprite:'👁️',bossHP:200,bossAtk:28,bossDef:10,bossReward:600,
+    bossDlg:[
+      {sp:'XOXO',pt:'👁️',tx:'¡Soy lo contrario al Chochoverso! ¡Todo lo que Chocho construye, yo lo destruyo!'},
+      {sp:'MAMASITA',pt:'🌟',tx:'¡No mientras yo exista, XOXO!'},
+    ],
+    winMsg:'¡XOXO ha sido sellado en la cárcel espacio-temporal!'
+  },
+  // 1 - Océanos de Celujuicha
+  {
+    name:'OCÉANOS DE\nCELUJUICHA', icon:'🌊',
+    bg:['#000818','#001228','#000c20'],
+    story:[
+      {sp:'NARRADOR',pt:'📜',tx:'Hace 60 millones de años, Putrixland era 100% agua. Aquí nació CELUJUICHA, la pequeña célula que inició toda la vida.'},
+      {sp:'CELUJUICHA',pt:'🦠',tx:'¡Yo soy el origen de todo! ¡Pero algo corrompe mis océanos!'},
+    ],
+    enemies:[
+      {name:'CELUJUICHA MUTANTE',sprite:'🧫',hp:60,atk:14,def:4,reward:90,desc:'Versión corrompida de la célula original.'},
+      {name:'GLUGLU MARINO',sprite:'🐙',hp:80,atk:18,def:7,reward:110,desc:'Criatura tentaculada del fondo oceánico.'},
+      {name:'PUTISAURIO MARINO',sprite:'🦈',hp:95,atk:22,def:9,reward:140,desc:'Putisaurio adaptado al agua.'},
+      {name:'LEVIATÁN XOXO',sprite:'🌀',hp:110,atk:25,def:10,reward:170,desc:'Monstruo marino nacido del Xoxoverso.'},
+    ],
+    npcs:[
+      {x:.3,y:.5,sp:'🦠',name:'CELUJUICHA',dlg:[{sp:'CELUJUICHA',pt:'🦠',tx:'¡Soy la madre de toda la vida en Putrixland! ¡Protégeme!'}]},
+      {x:.65,y:.45,sp:'🐚',name:'REINA MARINA',dlg:[{sp:'REINA MARINA',pt:'🐚',tx:'Los océanos lloran. Las aguas del Xoxoverso contaminan todo.'}]},
+    ],
+    bossName:'LEVIATÁN MAYOR',bossSprite:'🌊',bossHP:260,bossAtk:34,bossDef:14,bossReward:750,
+    bossDlg:[
+      {sp:'LEVIATÁN',pt:'🌊',tx:'¡SOOOY EL TERROR DE LOS MARES DE PUTRIXLAND!'},
+      {sp:'XUXI',pt:'🦎',tx:'¡Pues te mando al calabozo marino, bicho!'},
+    ],
+    winMsg:'¡Los océanos de Celujuicha han sido purificados!'
+  },
+  // 2 - Continentes Separados
+  {
+    name:'CONTINENTES\nSEPARADOS', icon:'🌍',
+    bg:['#0a0800','#180e00','#0a0900'],
+    story:[
+      {sp:'NARRADOR',pt:'📜',tx:'En el año 2027 a.m., los continentes se forman. El Golfo de Vera explota separando los reinos, y nace LAGARTIJA, la primera perrita mayor.'},
+      {sp:'LAGARTIJA',pt:'🦎',tx:'¡SOY LAGARTIJA, la primera! ¡Y estos reinos están en guerra!'},
+      {sp:'NARRADOR',pt:'📜',tx:'69 días después, PATITO EXILIADO cae desde una nave de un planeta desconocido...'},
+    ],
+    enemies:[
+      {name:'GUERRERO EGIPCIO',sprite:'🏺',hp:70,atk:18,def:8,reward:100,desc:'Soldado de Tutantragona69.'},
+      {name:'MURCIÉLAGA REAL',sprite:'🦇',hp:85,atk:21,def:9,reward:130,desc:'Guardiana del reino de las murciélagas.'},
+      {name:'OTAK-CIANO',sprite:'🌸',hp:95,atk:23,def:11,reward:155,desc:'Guerrero asiático de la Reina Otak.'},
+      {name:'MEGALODON REX',sprite:'🦷',hp:120,atk:28,def:13,reward:190,desc:'Criatura legendaria del norte de América.'},
+    ],
+    npcs:[
+      {x:.25,y:.52,sp:'🏺',name:'TUTANTRAGONA69',dlg:[{sp:'TUTANTRAGONA69',pt:'🏺',tx:'¡Soy el líder del antiguo Egipcio putrixiano! ¡Respeta mi reinado!'}]},
+      {x:.7,y:.46,sp:'🦇',name:'MUSIALA',dlg:[{sp:'MUSIALA',pt:'🦇',tx:'Soy la líder del reino de las murciélagas en el centro de Europa.'}]},
+    ],
+    bossName:'CHOCHOMAN CORRUPTO',bossSprite:'💪',bossHP:300,bossAtk:36,bossDef:16,bossReward:850,
+    bossDlg:[
+      {sp:'CHOCHOMAN',pt:'💪',tx:'¡Los continentes son MÍOS! ¡Nadie me quita el norte de América!'},
+      {sp:'REVELUVDIOSA',pt:'🔥',tx:'¡Kwami Revolución, Chochoman! ¡Hoy caes!'},
+    ],
+    winMsg:'¡Los continentes han encontrado la paz!'
+  },
+  // 3 - Era de los Ancestros
+  {
+    name:'ERA DE LOS\nANCESTROS', icon:'🧬',
+    bg:['#08000f','#12001f','#08000f'],
+    story:[
+      {sp:'NARRADOR',pt:'📜',tx:'312 a.m. Nacen los primeros ancestros: CULOJUICHA, LUCI LUCI y TUNG TUNG PENDEJUR.'},
+      {sp:'CULOJUICHA',pt:'🍑',tx:'¡Yo creo el reino y la FORMA DELUXE! ¡La fertilidad cósmica soy yo!'},
+      {sp:'TUNG TUNG',pt:'🥁',tx:'Me reproduzco mentalmente y creo la tribu unicelular. ¿Qué hay de tu reino?'},
+    ],
+    enemies:[
+      {name:'TRIBU UNICELULAR',sprite:'🧬',hp:65,atk:15,def:5,reward:95,desc:'Creación mental de Tung Tung Pendejur.'},
+      {name:'URGIDO ANCESTRAL',sprite:'😤',hp:80,atk:20,def:7,reward:120,desc:'Seguidor fanático del dios de los urgidos.'},
+      {name:'GUARDIÁN DELUXE',sprite:'💅',hp:100,atk:24,def:12,reward:150,desc:'Protector del reino Deluxe de Culojuicha.'},
+      {name:'HADA OSCURA',sprite:'🧚',hp:115,atk:27,def:13,reward:180,desc:'Sirviente corrupta del poder ancestral.'},
+    ],
+    npcs:[
+      {x:.28,y:.5,sp:'🍑',name:'CULOJUICHA',dlg:[{sp:'CULOJUICHA',pt:'🍑',tx:'¡El reino Deluxe es el más poderoso! ¡La forma Deluxe no tiene rival!'}]},
+      {x:.72,y:.55,sp:'🥁',name:'TUNG TUNG',dlg:[{sp:'TUNG TUNG',pt:'🥁',tx:'Tung tung pendejur... me reproduzco solo con el pensamiento.'}]},
+    ],
+    bossName:'LUCI LUCI ANCESTRAL',bossSprite:'🧚',bossHP:350,bossAtk:40,bossDef:18,bossReward:950,
+    bossDlg:[
+      {sp:'LUCI LUCI',pt:'🧚',tx:'¡Soy el dios de los urgidos! ¡Mi mandato ancestral aplastará todo!'},
+      {sp:'CHOCHO',pt:'⭐',tx:'¡LUCI LUCI! ¡Al calabozo bajo la custodia de Maxito Drag!'},
+    ],
+    winMsg:'¡Los ancestros han sido sometidos!'
+  },
+  // 4 - Primera Guerra Putrixiana
+  {
+    name:'1RA GUERRA\nPUTRIXIANA', icon:'⚔️',
+    bg:['#100005','#1f0010','#100008'],
+    story:[
+      {sp:'NARRADOR',pt:'📜',tx:'Año 15 d.m. LUCÍ LUCÍ se rebeló contra CHOCHO iniciando la primera guerra putrixiana.'},
+      {sp:'NARRADOR',pt:'📜',tx:'Traicionó a su esposo SERGEI con su mejor amigo ALFONSITA. El drama cósmico comenzó.'},
+      {sp:'LUCÍ LUCÍ',pt:'🧚',tx:'¡El poder de los urgidos es MÍO! ¡CHOCHO caerá!'},
+    ],
+    enemies:[
+      {name:'URGIDO SOLDADO',sprite:'😤',hp:80,atk:20,def:8,reward:110,desc:'Soldado del ejército de Lucí Lucí.'},
+      {name:'ALFONSITA',sprite:'😈',hp:95,atk:24,def:10,reward:140,desc:'La amante traidora, llena de drama cósmico.'},
+      {name:'SERGIOCIANITO (CORRUPTO)',sprite:'💙',hp:110,atk:26,def:12,reward:165,desc:'Gemelo corrompido por la traición de Lucí Lucí.'},
+      {name:'URGIDO ELITE',sprite:'💢',hp:130,atk:30,def:14,reward:200,desc:'La guardia de élite urgida.'},
+    ],
+    npcs:[
+      {x:.22,y:.48,sp:'😢',name:'SERGEI',dlg:[{sp:'SERGEI',pt:'😢',tx:'¡Lo encontré con Alfonsita! ¡Mi mejor amigo y mi esposo! ¡El drama!'}]},
+      {x:.7,y:.54,sp:'🐉',name:'MAXITO DRAG',dlg:[{sp:'MAXITO DRAG',pt:'🐉',tx:'Soy la custodia del calabozo cósmico. Cuando lo derrotes, yo me encargo.'}]},
+    ],
+    bossName:'LUCÍ LUCÍ GUERRE',bossSprite:'🧚',bossHP:400,bossAtk:45,bossDef:20,bossReward:1100,
+    bossDlg:[
+      {sp:'LUCÍ LUCI',pt:'🧚',tx:'¡Soy el dios de los urgidos! ¡Ni Chocho ni tú me detienen!'},
+      {sp:'KIYIX',pt:'💜',tx:'¡Te equivocas, Lucí! ¡Al calabozo bajo Maxito Drag!'},
+    ],
+    winMsg:'¡Lucí Lucí fue mandado al calabozo! ¡La 1ra Guerra Putrixiana terminó!'
+  },
+  // 5 - Período de los Culos
+  {
+    name:'PERÍODO DE\nLOS CULOS', icon:'💫',
+    bg:['#0a0505','#150a0a','#0a0505'],
+    story:[
+      {sp:'NARRADOR',pt:'📜',tx:'Año 20 d.m. Cae una estrella del cielo, se abre y sale un culo. Los culos se reproducen gracias a CULOJUICHA.'},
+      {sp:'CULO DE TINTA',pt:'✒️',tx:'Fui dejado por otro culo... caí en depresión... pero descubrí los EXCESOS. ¡Ahora soy el Culo de Tinta!'},
+      {sp:'NARRADOR',pt:'📜',tx:'El Culo de Tinta creó a ABUELITO TOY mediante la Culitinta y secuestró a Sasarai, Juanete y Negranieves...'},
+    ],
+    enemies:[
+      {name:'CULO BÁSICO',sprite:'💫',hp:85,atk:19,def:7,reward:115,desc:'Culo del período clásico. Abundan en esta zona.'},
+      {name:'CULO DE TINTA JR.',sprite:'✒️',hp:100,atk:23,def:10,reward:145,desc:'Mini versión del Culo de Tinta.'},
+      {name:'RESBALOSO',sprite:'🫧',hp:120,atk:27,def:12,reward:175,desc:'Del clan de las Resbalosas de Rasputia.'},
+      {name:'PUERTITA OSCURO',sprite:'🚪',hp:140,atk:31,def:14,reward:210,desc:'Puertita corrompido por energía cósmica oscura.'},
+    ],
+    npcs:[
+      {x:.3,y:.5,sp:'🚪',name:'PUERTITA',dlg:[{sp:'PUERTITA',pt:'🚪',tx:'Hice un pacto con la Srta. Maricona y ascendí a ser la entidad de las puertas.'}]},
+      {x:.68,y:.46,sp:'✒️',name:'CULO DE TINTA',dlg:[{sp:'CULO DE TINTA',pt:'✒️',tx:'La Culitinta es mi mayor creación. ¡A base de lechita y nieve!'}]},
+    ],
+    bossName:'ABUELITO TOY',bossSprite:'🪆',bossHP:450,bossAtk:48,bossDef:22,bossReward:1200,
+    bossDlg:[
+      {sp:'ABUELITO TOY',pt:'🪆',tx:'¡Soy la obra maestra del Culo de Tinta! ¡Nadie me destruye!'},
+      {sp:'CARLITOS',pt:'🎅',tx:'¡XUXI ESTOY MAMANDO PIZZA! ¡Abuelito cae HOY!'},
+    ],
+    winMsg:'¡Abuelito Toy fue derrotado! ¡El período de los culos llega a su fin!'
+  },
+  // 6 - Período Alessándrico
+  {
+    name:'ERA\nALESSÁNDRICA', icon:'🔥',
+    bg:['#0f0800','#1e1000','#0f0900'],
+    story:[
+      {sp:'NARRADOR',pt:'📜',tx:'1945. ALESSITA recibió un insulto de Jotito: "prepárate que te voy a robar, robar, robar, robarrr" y respondió quemándolo.'},
+      {sp:'ALESSITA',pt:'👸',tx:'¡NADIE me habla así! ¡Fundo los PUTAZIS y conquisto todo!'},
+      {sp:'NARRADOR',pt:'📜',tx:'Los PUTAZIS: Putrixianos Unidos, Travestis Amazónicos, Zona Imperial Sexual. ¡Conquistan Europa y Asia!'},
+    ],
+    enemies:[
+      {name:'PUTAZI RASO',sprite:'💪',hp:90,atk:22,def:10,reward:130,desc:'Soldado básico de los PUTAZIS.'},
+      {name:'PUTAZI ELITE',sprite:'⚡',hp:110,atk:27,def:13,reward:165,desc:'La guardia de élite de Alessita 1945.'},
+      {name:'TRAVESTI AMAZÓNICO',sprite:'🌿',hp:130,atk:30,def:15,reward:195,desc:'Guerrero amazónico de los PUTAZIS.'},
+      {name:'IMPERIAL SEXUAL',sprite:'👑',hp:155,atk:34,def:17,reward:230,desc:'La cúpula imperial de los PUTAZIS.'},
+    ],
+    npcs:[
+      {x:.25,y:.52,sp:'🎅',name:'CARLITOS',dlg:[{sp:'CARLITOS',pt:'🎅',tx:'¡Desperté del letargo justo para la cena navideña! ¡Voy a derrocar a Alessita!'}]},
+      {x:.7,y:.46,sp:'🔮',name:'SEÑORITA MAR',dlg:[{sp:'SEÑORITA MAR',pt:'🔮',tx:'Soy la diosa del tiempo ⏱️. El alma de Alessita será reencarnada...'}]},
+    ],
+    bossName:'ALESSITA 1945',bossSprite:'👸',bossHP:500,bossAtk:52,bossDef:24,bossReward:1400,
+    bossDlg:[
+      {sp:'ALESSITA',pt:'👸',tx:'¡SOY LA MATRIARCA Y SOBERANA DE TODO PUTRIXLAND! ¡Nadie me derroca nunca!'},
+      {sp:'CARLITOS',pt:'🎅',tx:'¡XUXI ESTOY MAMANDO PIZZA! ¡Alessita, la cena navideña te espera en el calabozo!'},
+    ],
+    winMsg:'¡Alessita 1945 fue derrocada! Fin del Período Alessándrico.'
+  },
+  // 7 - Familia Real / Club Ibiza
+  {
+    name:'FAMILIA REAL\n& CLUB IBIZA', icon:'👑',
+    bg:['#050010','#0d001a','#050012'],
+    story:[
+      {sp:'NARRADOR',pt:'📜',tx:'1967. Kiyo, aburrida de mandar, le cede el trono a ABUELITO, líder del Cartel de los Toys, a cambio de sicarios.'},
+      {sp:'ABUELITO',pt:'👴',tx:'¡Me casé con SHERLYN y tenemos 5 hijas! ¡El reino es nuestro!'},
+      {sp:'NARRADOR',pt:'📜',tx:'2013. NIGGKER se convierte en la prostituta estrella del Club de Ibiza Monroy Boing Boing 69...'},
+    ],
+    enemies:[
+      {name:'SICARIO DEL CARTEL',sprite:'🔫',hp:100,atk:25,def:12,reward:150,desc:'Miembro del Cartel de los Toys de Abuelito.'},
+      {name:'CLIENTE VIP',sprite:'💎',hp:120,atk:28,def:14,reward:180,desc:'Cliente del Club Ibiza Monroy Boing Boing 69.'},
+      {name:'URGIDO PERRICIANO',sprite:'😡',hp:145,atk:33,def:16,reward:215,desc:'Perriciano en plena era de urgidismo.'},
+      {name:'RESBALOSA ELITE',sprite:'✨',hp:165,atk:37,def:18,reward:250,desc:'Integrante del clan de las Resbalosas.'},
+    ],
+    npcs:[
+      {x:.28,y:.5,sp:'👴',name:'ABUELITO',dlg:[{sp:'ABUELITO',pt:'👴',tx:'¡Soy el rey del reino putrixiano! A cambio de protección divina y sicarios.'}]},
+      {x:.7,y:.52,sp:'💅',name:'NIGGKER',dlg:[{sp:'NIGGKER',pt:'💅',tx:'¡Soy la prostituta García, estrella del CDIDMBB69! ¡Ganando millones!'}]},
+    ],
+    bossName:'PERRICIANO URGIDO',bossSprite:'😡',bossHP:550,bossAtk:56,bossDef:26,bossReward:1600,
+    bossDlg:[
+      {sp:'PERRICIANO',pt:'😡',tx:'¡NADIE me excluye de la bongos! ¡Mi gonorrea me da PODER!'},
+      {sp:'XUXI',pt:'🦎',tx:'¡Putazos cósmicos, Perriciano! ¡Esta vez vas directo al calabozo!'},
+    ],
+    winMsg:'¡Perriciano fue mandado al calabozo temporalmente!'
+  },
+  // 8 - Era Loonática
+  {
+    name:'ERA\nLOONÁTICA', icon:'🌀',
+    bg:['#000f15','#001525','#000f18'],
+    story:[
+      {sp:'NARRADOR',pt:'📜',tx:'2023. En el reino LOONÁTICO nace JUMPING BOA, cansada de las miserias del Xoxoverso.'},
+      {sp:'JUMPING BOA',pt:'🐍',tx:'¡Le jumpeo a Babyjuicha en su verguita Cut! ¡Creo el Imperio Orbit! ¡TRIPLE.X es invencible!'},
+      {sp:'REVELUV',pt:'💫',tx:'Me rebelé contra Boa, me sacaron, me arrastraron de vuelta... pero ahora SOY la patrona mayor y admin del grupo.'},
+    ],
+    enemies:[
+      {name:'ESCLAVA ORBIT',sprite:'🌀',hp:110,atk:26,def:13,reward:165,desc:'Reclutada por Jumping Boa para el Imperio.'},
+      {name:'BOA MISTERIOSA',sprite:'🐍',hp:135,atk:30,def:15,reward:200,desc:'Integrante del misterioso TRIPLE.X.'},
+      {name:'CHER REBELDE',sprite:'🎤',hp:155,atk:35,def:17,reward:230,desc:'Se rebeló contra Erótica Xoxo.'},
+      {name:'FÉLIX VERSIÓN',sprite:'😼',hp:175,atk:39,def:19,reward:265,desc:'Convertida en esclava de Reveluv.'},
+    ],
+    npcs:[
+      {x:.25,y:.54,sp:'💫',name:'REVELUV',dlg:[{sp:'REVELUV',pt:'💫',tx:'¡Ahora soy la admin y patrona mayor! ¡Reveluv se casa con BIBI!'}]},
+      {x:.7,y:.48,sp:'💎',name:'BIBI',dlg:[{sp:'BIBI',pt:'💎',tx:'Reveluv y yo somos el amor más sólido del Loonático. ¡Para siempre!'}]},
+    ],
+    bossName:'JUMPING BOA',bossSprite:'🐍',bossHP:620,bossAtk:62,bossDef:28,bossReward:1800,
+    bossDlg:[
+      {sp:'JUMPING BOA',pt:'🐍',tx:'¡MI IMPERIO ORBIT NO TIENE LÍMITES! ¡TRIPLE.X DESTRUIRÁ TODO!'},
+      {sp:'KIYIX',pt:'💜',tx:'¡Nada es invencible frente al Kiyixverso! ¡Hoy caes, Boa!'},
+    ],
+    winMsg:'¡Jumping Boa fue derrotada! ¡El Imperio Orbit se desmorona!'
+  },
+  // 9 - FINAL: El Carcaz de Perriciano
+  {
+    name:'FINAL: EL\nCARCAZ DE\nPERRICIANO', icon:'💀',
+    bg:['#080010','#100020','#080015'],
+    story:[
+      {sp:'NARRADOR',pt:'📜',tx:'2027. PERRICIANO, en psicosis severa por la gonorrea y el exilio de la bongos, se rebela contra TODOS.'},
+      {sp:'PERRICIANO',pt:'💀',tx:'¡¡ME GASTARON TODO EL DINERO!! ¡¡Gonorrea + psicosis = CAGA PALO MODE!! ¡¡VENGANZA TOTAL!!'},
+      {sp:'REVELUVDIOSA',pt:'🔥',tx:'Reveluvdiosa murió el 8 de junio porque su chochito se prendió en candela. ¡Pero su ESPÍRITU VIVE!'},
+      {sp:'XUXI',pt:'🦎',tx:'¡Ya me tienes HARTA, Perriciano! ¡Esto termina HOY en el calabozo!'},
+    ],
+    enemies:[
+      {name:'PERRICIANO URGIDO X',sprite:'😡',hp:160,atk:38,def:18,reward:250,desc:'Perriciano en su modo urgido máximo.'},
+      {name:'GONORREA CÓSMICA',sprite:'🦠',hp:180,atk:42,def:15,reward:280,desc:'La enfermedad que domina a Perriciano.'},
+      {name:'CAGA PALO ELITE',sprite:'💩',hp:200,atk:45,def:20,reward:310,desc:'Forma de combate caosista de Perriciano.'},
+      {name:'PSICOSIS SEVERA',sprite:'🌀',hp:220,atk:50,def:22,reward:350,desc:'La psicosis de Perriciano hecha entidad.'},
+    ],
+    npcs:[
+      {x:.22,y:.48,sp:'👑',name:'SHERLYNSITA',dlg:[{sp:'SHERLYNSITA',pt:'👑',tx:'WE LOVE YOU, Perriciano, pero te reprendo. ¡Basta de gonorrea y de caga palo!'}]},
+      {x:.72,y:.56,sp:'🌟',name:'MAMASITA',dlg:[{sp:'MAMASITA',pt:'🌟',tx:'Ha llegado el momento final. El Chochoverso aguanta la respiración. ¡Vence!'}]},
+    ],
+    bossName:'PERRICIANO FINAL 💀',bossSprite:'💀',bossHP:800,bossAtk:70,bossDef:30,bossReward:3000,
+    bossDlg:[
+      {sp:'PERRICIANO',pt:'💀',tx:'¡¡¡CAGA PALO SUPREMO!!! ¡¡GONORREA + PSICOSIS + URGIDISMO = PODER INFINITO!! ¡¡NADIE ME SACA DE LA BONGOS!!'},
+      {sp:'XUXI',pt:'🦎',tx:'¡PUTAZOS CÓSMICOS MÁXIMOS, Perriciano! ¡Hoy mueres de gonorrea en el calabozo! ¡PARA SIEMPRE!'},
+    ],
+    winMsg:'¡PUTRIXLAND HA SIDO SALVADO!\n¡Perriciano murió de gonorrea en el calabozo!\n¡El Chochoverso está en paz!'
+  },
+];
+
+// ══════════════════════════════════════════════
+//  ESTADO
+// ══════════════════════════════════════════════
+const G = {
+  score:0, zone:0,
+  player:null, playerHP:0, playerMaxHP:0,
+  dlgQueue:[], dlgIdx:0, inDlg:false, dlgCb:null,
+  inBattle:false, enemy:null, enemyHP:0, enemyMaxHP:0,
+  cleared:[], canMove:true,
+  px:0, py:0, keys:{},
+  raf:null, twTimer:null,
+  battleDisabled:false, defending:false,
+  enemySpots:[],
+};
+
+// ══════════════════════════════════════════════
+//  CANVAS
+// ══════════════════════════════════════════════
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+function resizeCanvas(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// ══════════════════════════════════════════════
+//  STARS
+// ══════════════════════════════════════════════
+function genStars(){
+  const c = document.getElementById('stars');
+  for(let i=0;i<130;i++){
+    const s=document.createElement('div'); s.className='star';
+    s.style.left=Math.random()*100+'%'; s.style.top=Math.random()*100+'%';
+    const sz=Math.random()*2.5+.5; s.style.width=sz+'px'; s.style.height=sz+'px';
+    s.style.animationDelay=Math.random()*2+'s'; s.style.animationDuration=(1.5+Math.random()*2)+'s';
+    c.appendChild(s);
+  }
+}
+
+// ══════════════════════════════════════════════
+//  DRAW WORLD
+// ══════════════════════════════════════════════
+function drawWorld(){
+  const zone = ZONES[G.zone];
+  const w=canvas.width, h=canvas.height;
+  const t=Date.now()/1000;
+
+  // BG
+  const grd=ctx.createLinearGradient(0,0,0,h);
+  grd.addColorStop(0,zone.bg[0]); grd.addColorStop(.5,zone.bg[1]); grd.addColorStop(1,zone.bg[2]);
+  ctx.fillStyle=grd; ctx.fillRect(0,0,w,h);
+
+  // Stars
+  for(let i=0;i<70;i++){
+    const sx=((i*137.5)%1)*w, sy=((i*97.3)%1)*h;
+    const pulse=Math.sin(t*1.5+i)*.5+.5;
+    ctx.globalAlpha=.15+pulse*.45; ctx.fillStyle='#fff';
+    ctx.fillRect(sx,sy,2,2);
+  }
+  ctx.globalAlpha=1;
+
+  // Ground
+  ctx.fillStyle='rgba(180,100,255,.2)'; ctx.fillRect(0,h*.72,w,2);
+  ctx.fillStyle='rgba(100,50,150,.1)';
+  for(let x=0;x<w;x+=32) for(let y=h*.72;y<h;y+=32) ctx.fillRect(x+1,y+1,30,30);
+
+  // Zone name
+  ctx.font="9px 'Press Start 2P',monospace"; ctx.fillStyle='rgba(200,150,255,.5)'; ctx.textAlign='center';
+  ctx.fillText('ZONA '+(G.zone+1)+'/10: '+zone.name.replace('\n',' '), w/2, 48);
+
+  // NPCs
+  const npcs = ZONES[G.zone].npcs||[];
+  for(const npc of npcs){
+    const nx=npc.x*w, ny=npc.y*h;
+    const glow=ctx.createRadialGradient(nx,ny,2,nx,ny,28);
+    glow.addColorStop(0,'rgba(170,68,255,.35)'); glow.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=glow; ctx.fillRect(nx-28,ny-28,56,56);
+    ctx.font='26px serif'; ctx.textAlign='center'; ctx.fillText(npc.sp,nx,ny);
+    ctx.font="6px 'Press Start 2P',monospace"; ctx.fillStyle='#cc88ff'; ctx.fillText(npc.name,nx,ny+20);
+    if(Math.hypot(G.px-nx,G.py-ny)<55){
+      ctx.fillStyle='#ffff00'; ctx.font="6px 'Press Start 2P',monospace"; ctx.fillText('[E] HABLAR',nx,ny-22);
+    }
+  }
+
+  const cleared = G.cleared.includes(G.zone);
+
+  if(!cleared){
+    // Enemy spots (pre-computed)
+    const es = G.enemySpots;
+    const ze = ZONES[G.zone].enemies;
+    for(let i=0;i<es.length;i++){
+      const ex=es[i].x, ey=es[i].y;
+      const e=ze[i];
+      ctx.font='24px serif'; ctx.textAlign='center'; ctx.fillText(e.sprite,ex,ey);
+      ctx.font="5px 'Press Start 2P',monospace"; ctx.fillStyle='#ff4466'; ctx.fillText('⚔',ex,ey+18);
+      if(Math.hypot(G.px-ex,G.py-ey)<50){
+        ctx.fillStyle='#ff4466'; ctx.font="5px 'Press Start 2P',monospace"; ctx.fillText('[E] BATALLAR',ex,ey-20);
+      }
+    }
+
+    // Boss
+    const bx=w*.88, by=h*.5;
+    const pulse=Math.sin(t*3)*.3+.7; ctx.globalAlpha=pulse;
+    ctx.font='34px serif'; ctx.textAlign='center'; ctx.fillText(ZONES[G.zone].bossSprite,bx,by);
+    ctx.globalAlpha=1;
+    ctx.font="5px 'Press Start 2P',monospace"; ctx.fillStyle='#ff2244'; ctx.fillText('BOSS!',bx,by+26);
+    if(Math.hypot(G.px-bx,G.py-by)<60){
+      ctx.fillStyle='#ff2244'; ctx.font="6px 'Press Start 2P',monospace"; ctx.fillText('[E] BOSS',bx,by-28);
+    }
+  } else {
+    // Exit door
+    const ex=w*.9, ey=h*.5;
+    ctx.font='30px serif'; ctx.textAlign='center'; ctx.fillText('🚪',ex,ey);
+    ctx.font="5px 'Press Start 2P',monospace"; ctx.fillStyle='#44ff88';
+    ctx.fillText(G.zone>=9?'FINAL':'SIGUIENTE',ex,ey+26);
+    if(Math.hypot(G.px-ex,G.py-ey)<55){
+      ctx.fillStyle='#44ff88'; ctx.font="6px 'Press Start 2P',monospace";
+      ctx.fillText('[E]',ex,ey-26);
+    }
+  }
+
+  // Player shadow
+  ctx.fillStyle='rgba(200,100,255,.2)';
+  ctx.beginPath(); ctx.ellipse(G.px,G.py+14,14,5,0,0,Math.PI*2); ctx.fill();
+  // Player
+  ctx.font='28px serif'; ctx.textAlign='center'; ctx.fillText(G.player.sprite,G.px,G.py);
+}
+
+// ══════════════════════════════════════════════
+//  MOVEMENT
+// ══════════════════════════════════════════════
+function movePlayer(){
+  if(!G.canMove||G.inDlg||G.inBattle) return;
+  const spd=3.5, w=canvas.width, h=canvas.height;
+  if(G.keys['ArrowLeft']||G.keys['KeyA']) G.px-=spd;
+  if(G.keys['ArrowRight']||G.keys['KeyD']) G.px+=spd;
+  if(G.keys['ArrowUp']||G.keys['KeyW']) G.py-=spd*.55;
+  if(G.keys['ArrowDown']||G.keys['KeyS']) G.py+=spd*.55;
+  G.px=Math.max(20,Math.min(w-20,G.px));
+  G.py=Math.max(h*.32,Math.min(h*.85,G.py));
+}
+
+// ══════════════════════════════════════════════
+//  INTERACT
+// ══════════════════════════════════════════════
+function interact(){
+  if(G.inDlg){ advDlg(); return; }
+  if(G.inBattle) return;
+  const w=canvas.width, h=canvas.height;
+  const npcs=ZONES[G.zone].npcs||[];
+  for(const npc of npcs){
+    if(Math.hypot(G.px-npc.x*w, G.py-npc.y*h)<55){ showDlg(npc.dlg); return; }
+  }
+  const cleared=G.cleared.includes(G.zone);
+  if(!cleared){
+    for(let i=0;i<G.enemySpots.length;i++){
+      const es=G.enemySpots[i];
+      if(Math.hypot(G.px-es.x,G.py-es.y)<50){ startBattle(ZONES[G.zone].enemies[i],false); return; }
+    }
+    const bx=w*.88, by=h*.5;
+    if(Math.hypot(G.px-bx,G.py-by)<60){
+      const z=ZONES[G.zone];
+      showDlg(z.bossDlg,()=>startBattle({
+        name:z.bossName, sprite:z.bossSprite, hp:z.bossHP, atk:z.bossAtk, def:z.bossDef,
+        reward:z.bossReward, isBoss:true, desc:'El jefe de zona.'
+      }, true));
+      return;
+    }
+  } else {
+    const ex=w*.9, ey=h*.5;
+    if(Math.hypot(G.px-ex,G.py-ey)<55){ nextZone(); }
+  }
+}
+
+// ══════════════════════════════════════════════
+//  DIALOG
+// ══════════════════════════════════════════════
+function showDlg(lines, cb){
+  G.dlgQueue=lines; G.dlgIdx=0; G.inDlg=true; G.dlgCb=cb||null;
+  document.getElementById('dialogBox').style.display='block';
+  renderDlg();
+}
+function renderDlg(){
+  if(G.dlgIdx>=G.dlgQueue.length){ closeDlg(); return; }
+  const l=G.dlgQueue[G.dlgIdx];
+  document.getElementById('dialogPortrait').textContent=l.pt;
+  document.getElementById('dialogSpeaker').textContent=l.sp;
+  const el=document.getElementById('dialogText'); el.textContent='';
+  if(G.twTimer) clearInterval(G.twTimer);
+  let i=0;
+  G.twTimer=setInterval(()=>{ el.textContent+=l.tx[i]||''; i++; if(i>=l.tx.length) clearInterval(G.twTimer); },28);
+}
+function advDlg(){
+  G.dlgIdx++;
+  if(G.dlgIdx>=G.dlgQueue.length){ closeDlg(); }
+  else renderDlg();
+}
+function closeDlg(){
+  G.inDlg=false;
+  document.getElementById('dialogBox').style.display='none';
+  if(G.dlgCb){ const cb=G.dlgCb; G.dlgCb=null; setTimeout(cb,200); }
+}
+
+// ══════════════════════════════════════════════
+//  BATTLE
+// ══════════════════════════════════════════════
+function startBattle(enemy, isBoss){
+  G.inBattle=true; G.enemy=enemy; G.enemyHP=enemy.hp; G.enemyMaxHP=enemy.hp;
+  G.battleDisabled=false; G.defending=false;
+  document.getElementById('gameScreen').style.display='none';
+  document.getElementById('touchControls').style.display='none';
+  document.getElementById('touchActionBtn').style.display='none';
+  const bs=document.getElementById('battleScreen'); bs.style.display='flex';
+  document.getElementById('bEnemySprite').textContent=enemy.sprite;
+  document.getElementById('bEnemyName').textContent=enemy.name;
+  document.getElementById('bPlayerSprite').textContent=G.player.sprite;
+  document.getElementById('bPlayerName').textContent=G.player.name;
+  updateBattleHP();
+  setLog('⚔️ ¡'+enemy.name+' apareció!\n'+enemy.desc);
+  buildActions();
+}
+
+function buildActions(){
+  const div=document.getElementById('battleActions'); div.innerHTML='';
+  const acts=[
+    {label:'⚔️ ATACAR', cls:'', fn:()=>pAtk(G.player.atk,'¡Ataque directo!')},
+    {label:'✨ '+G.player.ability, cls:'special', fn:()=>pAbility()},
+    {label:'💊 CURAR (+35 HP)', cls:'', fn:()=>pHeal()},
+    {label:'🛡️ DEFENDER', cls:'', fn:()=>pDefend()},
+  ];
+  acts.forEach(a=>{
+    const btn=document.createElement('button');
+    btn.className='battle-btn '+(a.cls||'');
+    btn.textContent=a.label;
+    btn.onclick=()=>{ if(!G.battleDisabled) a.fn(); };
+    div.appendChild(btn);
+  });
+}
+
+function pAtk(dmg, msg){
+  G.battleDisabled=true;
+  const dmgDealt=Math.max(1, dmg - (G.enemy.def||0) + Math.floor(Math.random()*10)-4);
+  G.enemyHP=Math.max(0,G.enemyHP-dmgDealt);
+  updateBattleHP();
+  setLog('💥 '+msg+'\n¡Causas '+dmgDealt+' de daño a '+G.enemy.name+'!');
+  flash('#ff000040');
+  setTimeout(()=>{ G.enemyHP<=0 ? battleWin() : enemyTurn(); },950);
+}
+
+function pAbility(){
+  G.battleDisabled=true;
+  const p=G.player;
+  if(p.abilityType==='oneshot'){
+    G.enemyHP=0; updateBattleHP();
+    setLog('🍕 '+p.ability+'!\n¡¡¡K.O. INSTANTÁNEO!!! ¡'+G.enemy.name+' fue destruido de 1 golpe!');
+    flash('#ffffff80');
+    setTimeout(()=>battleWin(),950);
+  } else if(p.abilityType==='random'){
+    const dmg=50+Math.floor(Math.random()*151);
+    G.enemyHP=Math.max(0,G.enemyHP-dmg); updateBattleHP();
+    setLog('💜 '+p.ability+'!\n¡Sin lógica ni gravedad! ¡'+dmg+' de daño al enemigo!');
+    flash('#aa00ff50');
+    setTimeout(()=>{ G.enemyHP<=0 ? battleWin() : enemyTurn(); },950);
+  } else if(p.abilityType==='heal'){
+    const dmg=p.abilityDmg;
+    G.enemyHP=Math.max(0,G.enemyHP-dmg); updateBattleHP();
+    G.playerHP=Math.min(G.playerMaxHP,G.playerHP+25); updateHUD();
+    setLog('🔥 '+p.ability+'!\n¡'+dmg+' de daño! ¡+25 HP recuperados!');
+    flash('#ff880040');
+    setTimeout(()=>{ G.enemyHP<=0 ? battleWin() : enemyTurn(); },950);
+  } else {
+    // fixed
+    const dmg=p.abilityDmg;
+    G.enemyHP=Math.max(0,G.enemyHP-dmg); updateBattleHP();
+    setLog('✨ '+p.ability+'!\n¡'+dmg+' de daño fijo al enemigo!');
+    flash('#ffdd0050');
+    setTimeout(()=>{ G.enemyHP<=0 ? battleWin() : enemyTurn(); },950);
+  }
+}
+
+function pHeal(){
+  G.battleDisabled=true;
+  G.playerHP=Math.min(G.playerMaxHP,G.playerHP+35); updateHUD();
+  setLog('💊 ¡Te curas 35 HP!\nHP actual: '+G.playerHP+'/'+G.playerMaxHP);
+  flash('#00ff0030');
+  setTimeout(()=>enemyTurn(),950);
+}
+
+function pDefend(){
+  G.battleDisabled=true; G.defending=true;
+  setLog('🛡️ ¡Postura defensiva!\nRecibirás mucho menos daño este turno.');
+  flash('#4444ff30');
+  setTimeout(()=>enemyTurn(),950);
+}
+
+function enemyTurn(){
+  const def=G.defending; G.defending=false;
+  const dmg=Math.max(1, G.enemy.atk - G.player.def + Math.floor(Math.random()*10)-4);
+  const actual=def?Math.floor(dmg*.35):dmg;
+  G.playerHP=Math.max(0,G.playerHP-actual); updateHUD();
+  setLog('💢 ¡'+G.enemy.name+' ataca!'+(def?' (¡BLOQUEADO!':'')+'\n¡Recibes '+actual+' de daño!');
+  flash('#ff000030');
+  setTimeout(()=>{ G.playerHP<=0 ? battleLose() : (G.battleDisabled=false); },950);
+}
+
+function battleWin(){
+  G.score+=G.enemy.reward; updateHUD();
+  setLog('🎉 ¡VICTORIA!\n¡'+G.enemy.name+' derrotado! +'+G.enemy.reward+' pts!');
+  disableActions();
+  setTimeout(()=>{
+    document.getElementById('battleScreen').style.display='none';
+    document.getElementById('gameScreen').style.display='flex';
+    document.getElementById('touchControls').style.display='block';
+    document.getElementById('touchActionBtn').style.display='block';
+    G.inBattle=false;
+    if(G.enemy.isBoss){
+      G.cleared.push(G.zone);
+      const msg=ZONES[G.zone].winMsg||'¡Zona completada!';
+      showDlg([
+        {sp:'NARRADOR',pt:'📜',tx:'¡VICTORIA ÉPICA! '+G.enemy.name+' mandado al calabozo cósmico!'},
+        {sp:'NARRADOR',pt:'📜',tx:msg+' ¡Avanza hacia la siguiente zona!'},
+      ]);
+    }
+  },1800);
+}
+
+function battleLose(){
+  setLog('💀 ¡HAS CAÍDO!\nEl Chochoverso llora tu derrota...'); disableActions();
+  setTimeout(()=>{
+    document.getElementById('battleScreen').style.display='none';
+    document.getElementById('touchControls').style.display='none';
+    document.getElementById('touchActionBtn').style.display='none';
+    showEnd(false);
+  },2000);
+}
+
+function disableActions(){ document.querySelectorAll('.battle-btn').forEach(b=>b.disabled=true); }
+
+function updateBattleHP(){
+  const ep=(G.enemyHP/G.enemyMaxHP)*100;
+  document.getElementById('eHpBar').style.width=ep+'%';
+  document.getElementById('eHpTxt').textContent=G.enemyHP;
+  const pp=(G.playerHP/G.playerMaxHP)*100;
+  document.getElementById('pHpBar').style.width=pp+'%';
+  document.getElementById('pHpTxt').textContent=G.playerHP;
+}
+
+function setLog(t){ document.getElementById('battleLog').textContent=t; }
+
+// ══════════════════════════════════════════════
+//  HUD
+// ══════════════════════════════════════════════
+function updateHUD(){
+  const p=(G.playerHP/G.playerMaxHP)*100;
+  document.getElementById('hpBar').style.width=p+'%';
+  document.getElementById('hpText').textContent=G.playerHP+'/'+G.playerMaxHP;
+  document.getElementById('scoreText').textContent=G.score;
+  document.getElementById('zoneText').textContent=G.zone+1;
+  document.getElementById('hudName').textContent=G.player.name;
+  document.getElementById('hudAbility').textContent=G.player.ability;
+  updateBattleHP();
+}
+
+// ══════════════════════════════════════════════
+//  FLASH
+// ══════════════════════════════════════════════
+function flash(col){
+  const ov=document.getElementById('flashOverlay');
+  ov.style.background=col; ov.style.opacity='1';
+  setTimeout(()=>ov.style.opacity='0',120);
+}
+
+// ══════════════════════════════════════════════
+//  ZONE MANAGEMENT
+// ══════════════════════════════════════════════
+function loadZone(id){
+  G.zone=id;
+  const w=canvas.width, h=canvas.height;
+  G.px=w*.1; G.py=h*.65;
+  // Compute enemy spots
+  const positions=[
+    {x:w*.38,y:h*.6},{x:w*.52,y:h*.55},{x:w*.62,y:h*.62},{x:w*.45,y:h*.68}
+  ];
+  G.enemySpots=positions.slice(0,ZONES[id].enemies.length);
+  updateHUD();
+  showDlg(ZONES[id].story);
+}
+
+function nextZone(){
+  if(G.zone>=9){ showEnd(true); return; }
+  // Zone transition effect
+  const zt=document.getElementById('zoneTransition');
+  const nextZ=ZONES[G.zone+1];
+  document.getElementById('ztTitle').textContent='🌟 ZONA '+(G.zone+1)+' COMPLETADA 🌟';
+  document.getElementById('ztSub').textContent='Entrando a: '+nextZ.name.replace('\n',' ')+' '+nextZ.icon;
+  zt.style.display='flex';
+  setTimeout(()=>{
+    zt.style.display='none';
+    G.zone++;
+    loadZone(G.zone);
+  },2000);
+}
+
+// ══════════════════════════════════════════════
+//  END
+// ══════════════════════════════════════════════
+function showEnd(won){
+  const es=document.getElementById('endScreen'); es.style.display='flex';
+  document.getElementById('gameScreen').style.display='none';
+  if(won){
+    document.getElementById('endTitle').textContent='🏆 ¡PUTRIXLAND SALVADO!';
+    document.getElementById('endTitle').style.color='#ffdd44';
+    document.getElementById('endScore').textContent=
+      '¡PERRICIANO MURIÓ DE GONORREA EN EL CALABOZO!\n'+
+      'Puntos de Gloria: '+G.score+'\n'+
+      '¡El Chochoverso está en paz... por ahora! 🌟';
+  } else {
+    document.getElementById('endTitle').textContent='💀 GAME OVER';
+    document.getElementById('endTitle').style.color='#ff4466';
+    document.getElementById('endScore').textContent='Puntos: '+G.score+'\n¡Putrixland necesita una heroína más fuerte!\n¡Inténtalo de nuevo!';
+  }
+}
+
+function returnToTitle(){
+  document.getElementById('endScreen').style.display='none';
+  document.getElementById('titleScreen').style.display='flex';
+  if(G.raf) cancelAnimationFrame(G.raf);
+  G.zone=0; G.score=0; G.cleared=[];
+}
+
+// ══════════════════════════════════════════════
+//  CHAR SELECT
+// ══════════════════════════════════════════════
+function startGame(){
+  document.getElementById('titleScreen').style.display='none';
+  const cs=document.getElementById('charSelectScreen'); cs.style.display='flex';
+  const div=document.getElementById('csCards'); div.innerHTML='';
+  CHARACTERS.forEach(ch=>{
+    const card=document.createElement('div'); card.className='cs-card';
+    card.innerHTML=`
+      <div class="cs-icon">${ch.icon}</div>
+      <div class="cs-name">${ch.name}</div>
+      <div class="cs-stat">HP:${ch.hp} | ATK:${ch.atk} | DEF:${ch.def}</div>
+      <div class="cs-abil">✨ ${ch.ability}</div>
+      <div class="cs-abil" style="color:#aaddff;font-size:clamp(3px,.7vw,5px)">${ch.abilityDesc}</div>
+      <div class="cs-desc">${ch.desc.replace(/\n/g,'<br>')}</div>
+    `;
+    card.onclick=()=>selectChar(ch);
+    div.appendChild(card);
+  });
+}
+
+function selectChar(ch){
+  G.player=ch; G.playerHP=ch.hp; G.playerMaxHP=ch.hp;
+  G.score=0; G.zone=0; G.cleared=[];
+  document.getElementById('charSelectScreen').style.display='none';
+  document.getElementById('gameScreen').style.display='flex';
+  document.getElementById('touchControls').style.display='block';
+  document.getElementById('touchActionBtn').style.display='block';
+  loadZone(0);
+  startLoop();
+}
+
+// ══════════════════════════════════════════════
+//  GAME LOOP
+// ══════════════════════════════════════════════
+function startLoop(){
+  function loop(){
+    movePlayer();
+    if(!G.inBattle){ ctx.clearRect(0,0,canvas.width,canvas.height); drawWorld(); }
+    G.raf=requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+// ══════════════════════════════════════════════
+//  INPUT — KEYBOARD
+// ══════════════════════════════════════════════
+window.addEventListener('keydown', e=>{
+  G.keys[e.code]=true;
+  if(e.code==='KeyE'||e.code==='Space'){
+    interact();
+    e.preventDefault();
+  }
+});
+window.addEventListener('keyup', e=>{ G.keys[e.code]=false; });
+
+// ══════════════════════════════════════════════
+//  INPUT — TOUCH D-PAD
+// ══════════════════════════════════════════════
+function setupDpad(){
+  const map={dUp:'ArrowUp',dDown:'ArrowDown',dLeft:'ArrowLeft',dRight:'ArrowRight'};
+  Object.entries(map).forEach(([id,code])=>{
+    const btn=document.getElementById(id); if(!btn) return;
+    const press=e=>{ e.preventDefault(); G.keys[code]=true; btn.classList.add('pressed'); };
+    const release=e=>{ e.preventDefault(); G.keys[code]=false; btn.classList.remove('pressed'); };
+    btn.addEventListener('touchstart',press,{passive:false});
+    btn.addEventListener('touchend',release,{passive:false});
+    btn.addEventListener('touchcancel',release,{passive:false});
+    btn.addEventListener('mousedown',press);
+    btn.addEventListener('mouseup',release);
+    btn.addEventListener('mouseleave',release);
+  });
+
+  const dpadEl=document.querySelector('.dpad');
+  if(dpadEl){
+    dpadEl.addEventListener('touchmove',e=>{
+      e.preventDefault();
+      const touch=e.touches[0], rect=dpadEl.getBoundingClientRect();
+      const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+      const dx=touch.clientX-cx, dy=touch.clientY-cy;
+      ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].forEach(k=>G.keys[k]=false);
+      document.querySelectorAll('.dpad-btn').forEach(b=>b.classList.remove('pressed'));
+      const th=18;
+      if(Math.abs(dx)>th||Math.abs(dy)>th){
+        if(Math.abs(dy)>Math.abs(dx)*.5){
+          if(dy<0){ G.keys['ArrowUp']=true; document.getElementById('dUp').classList.add('pressed'); }
+          else     { G.keys['ArrowDown']=true; document.getElementById('dDown').classList.add('pressed'); }
+        }
+        if(Math.abs(dx)>Math.abs(dy)*.5){
+          if(dx<0){ G.keys['ArrowLeft']=true; document.getElementById('dLeft').classList.add('pressed'); }
+          else     { G.keys['ArrowRight']=true; document.getElementById('dRight').classList.add('pressed'); }
+        }
+      }
+    },{passive:false});
+    dpadEl.addEventListener('touchend',()=>{
+      ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].forEach(k=>G.keys[k]=false);
+      document.querySelectorAll('.dpad-btn').forEach(b=>b.classList.remove('pressed'));
+    });
+  }
+
+  const ab=document.getElementById('btnAction');
+  if(ab){
+    const doAct=e=>{ e.preventDefault(); ab.classList.add('pressed'); setTimeout(()=>ab.classList.remove('pressed'),150); interact(); };
+    ab.addEventListener('touchstart',doAct,{passive:false});
+    ab.addEventListener('mousedown',doAct);
+  }
+}
+
+// Dialog click
+document.getElementById('dialogBox').addEventListener('click',()=>{ if(G.inDlg) advDlg(); });
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+genStars();
+setupDpad();
+</script>
+</body>
+</html>
