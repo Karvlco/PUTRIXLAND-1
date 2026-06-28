@@ -596,6 +596,8 @@ const G = {
 // ══════════════════════════════════════════════
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
+const glugluxianoImg = new Image();
+glugluxianoImg.src = "assets/Glugluxiano_2.PNG";
 function resizeCanvas(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
@@ -668,7 +670,10 @@ function drawWorld(){
     for(let i=0;i<es.length;i++){
       const ex=es[i].x, ey=es[i].y;
       const e=ze[i];
-      ctx.font='24px serif'; ctx.textAlign='center'; ctx.fillText(e.sprite,ex,ey);
+      ctx.font='24px serif'; ctx.textAlign='center';if(e.name === "GLUGLUXIANO"){
+    ctx.drawImage(glugluxianoImg, ex-24, ey-24, 48, 48); }else{
+    ctx.fillText(e.sprite, ex, ey);
+      }
       ctx.font="5px 'Press Start 2P',monospace"; ctx.fillStyle='#ff4466'; ctx.fillText('⚔',ex,ey+18);
       if(Math.hypot(G.px-ex,G.py-ey)<50){
         ctx.fillStyle='#ff4466'; ctx.font="5px 'Press Start 2P',monospace"; ctx.fillText('[E] BATALLAR',ex,ey-20);
